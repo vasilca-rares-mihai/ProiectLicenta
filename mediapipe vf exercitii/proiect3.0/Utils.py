@@ -29,9 +29,17 @@ def transformTuple(landmark):
     return (landmark.x, landmark.y)
 
 
-def drawLine(image, x1, y1, x2, y2):
+def drawLine(image, p1, p2):
     h, w, _ = image.shape
+
+    def get_xy(p):
+        if hasattr(p, "x") and hasattr(p, "y"):
+            return p.x, p.y
+        return p
+    x1, y1 = get_xy(p1)
+    x2, y2 = get_xy(p2)
+
     x1, y1 = int(x1 * w), int(y1 * h)
     x2, y2 = int(x2 * w), int(y2 * h)
 
-    cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    cv2.line(image, (x1, y1), (x2, y2), (255, 192, 203), 3)

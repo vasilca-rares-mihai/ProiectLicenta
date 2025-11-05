@@ -29,6 +29,10 @@ class VideoAnalyzer(ABC):
     def checkRep(self, landmarks_data):
         pass
 
+    @abstractmethod
+    def displayInfo(self, landmarks_data, image):
+        pass
+
 
     def analyze(self):
         print(f"Type of analysis: {self.__class__.__name__}")
@@ -50,7 +54,8 @@ class VideoAnalyzer(ABC):
                     landmarks = results.pose_landmarks.landmark
 
                     landmarks_data = self.extractLandmarks(landmarks)
-                    self.checkRep(landmarks_data, image)
+                    self.displayInfo(landmarks_data, image)
+                    self.checkRep(landmarks_data)
 
                     mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
