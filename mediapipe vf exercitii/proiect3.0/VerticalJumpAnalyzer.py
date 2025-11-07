@@ -1,25 +1,11 @@
 import os
 import cv2
 from VideoAnalyzer import VideoAnalyzer, mp_pose
-from Utils import distance_points, transformTuple
+from Utils import distance_points
 
 class VerticalJumpAnalyzer(VideoAnalyzer):
     def __init__(self, video_path):
         super().__init__(video_path, window_name='Vertical Jump Analysis')
-        self.prev_distance_px = 0.0
-        self.max_distance_px = 0.0
-        self.prevCounter = True
-        self.val = True
-        self.floor = None
-        self.scale = None
-        self.athlete_height = 1.75
-        self.counter = 0
-
-    def extractLandmarks(self, landmarks):
-        right_heel = landmarks[mp_pose.PoseLandmark.RIGHT_HEEL]
-        nose = landmarks[mp_pose.PoseLandmark.NOSE]
-
-        return transformTuple(right_heel), transformTuple(nose)
 
     def calculateScale(self, ankle, nose, h):
         if self.scale is None:
@@ -29,6 +15,19 @@ class VerticalJumpAnalyzer(VideoAnalyzer):
             if height_px > 0:
                 self.scale = self.athlete_height / height_px
                 print(f"Scale: {self.scale:.5f} m/px")
+
+    def extractLandmarks(self, landmarks):
+        heelR = [landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].y]
+        heelL = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
+        nose = [landmarks[mp_pose.PoseLandmark.NOSE.value].x, landmarks[mp_pose.PoseLandmark.NOSE.value].y]
+
+        return heelR, heelL, nose
+
+    def displayInfo(self, landmarks_data, image):
+        heelL, heelR, nose = landmarks_data
+        drawLine(image, heelL, heelR)
+        cv2.putText(image, self.stage, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+
 
 
     def checkRep(self, landmarks_data):

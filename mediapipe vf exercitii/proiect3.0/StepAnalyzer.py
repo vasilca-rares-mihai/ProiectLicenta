@@ -1,84 +1,63 @@
 import os
 import cv2
 from VideoAnalyzer import VideoAnalyzer, mp_pose
-from Utils import distance_points
+from Utils import distance_points, drawLine
+
 
 class StepAnalyzer(VideoAnalyzer):
     def __init__(self, video_path):
         super().__init__(video_path, window_name="Running Analysis")
-        self.total_distance = 0.0
-        self.speed = 0.0
         self.prev_distance_px = 0.0
-        self.max_distance_px = 0.0
         self.in_pas = False
-        self.scale = None
-        self.athlete_height = 1.75
-        self.athlete_height = float(input("The athlete has a height of (m): "))
+        self.video_timer = 0.0
 
-    def extractLandmarks(self, landmarks):
-        if self.cap.isOpened() and hasattr(self.cap, 'get'):
-            h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        else:
-            h, w = 1080, 1920
-
-        left_heel = landmarks[mp_pose.PoseLandmark.LEFT_HEEL]
-        right_heel = landmarks[mp_pose.PoseLandmark.RIGHT_HEEL]
-        ankle = landmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
-        nose = landmarks[mp_pose.PoseLandmark.NOSE]
-
-        left_heel_coord = (int(left_heel.x * w), int(left_heel.y * h))
-        right_heel_coord = (int(right_heel.x * w), int(right_heel.y * h))
-
-        return left_heel_coord, right_heel_coord, ankle, nose, h, w
-
-    def calculateScale(self, ankle, nose, h):
-        if self.scale is None:
-            capY = int(nose.y * h)
-            footY = int(ankle.y * h)
-            height_px = abs(footY - capY)
-            if height_px > 0:
-                self.scale = self.athlete_height / height_px
-                print(f"Scale: {self.scale:.5f} m/px")
-
-    def calcSpeed(self):
-        frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    #I created this function to calculate the distance and speed achieved by the athlete.
+    def calculateDistanceAndSpeed(self):
+        #I found in the specialized documentation a ratio between height and step distance
+        #Females: Height in inches multiplied by 0.413 equals stride length
+        #Males: Height in inches multiplied by 0.415 equals stride length
+        if self.athleteGender == "M":
+            self.distance = 0.415 * self.athleteHeight * self.counter
+        elif self.athleteGender == "F":
+            self.distance = 0.413 * self.athleteHeight * self.counter
+        #I calculated the duration at which a frame is processed, to obtain the instantaneous speed
         fps = self.cap.get(cv2.CAP_PROP_FPS)
-        if fps > 0 and frames > 0:
-            duration_sec = frames / fps
-            if duration_sec > 0:
-                self.speed = self.total_distance / duration_sec
-                return self.speed
-        return 0.0
+        frame_time = 1 / fps
+        self.video_timer += frame_time
+        #Speed
+        self.speed = self.distance / self.video_timer
+
+
+    #function that extracts the coordinates of key points from the image and returns them
+    def extractLandmarks(self, landmarks):
+        heelL = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
+        heelR = [landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].y]
+
+        return heelL, heelR
+
+    #function I used to draw some information, for exemple: the distance between athlete's 2 legs
+    def displayInfo(self, landmarks_data, image):
+        heelL, heelR = landmarks_data
+        drawLine(image, heelL, heelR)
+        cv2.putText(image, self.stage, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+
 
     def checkRep(self, landmarks_data):
-        left_heel_coord, right_heel_coord, ankle, nose, h, w = landmarks_data
-
-        self.calculateScale(ankle, nose, h)
-        if self.scale is None:
-            return
-
-        distance_px = distance_points(left_heel_coord, right_heel_coord)
-
-        if distance_px > self.max_distance_px:
-            self.max_distance_px = distance_px
-
-        if distance_px < self.prev_distance_px and self.in_pas:
+        heelL, heelR = landmarks_data
+        #I calculate distance between athlet's to legs
+        distanceLegs_px = distance_points(heelL, heelR)
+        #if the distance starts to decrease, the step has been taken and the counter will increase.
+        if distanceLegs_px < self.prev_distance_px and self.in_pas:
             self.counter += 1
-            distance_max_m = self.max_distance_px * self.scale
-            self.total_distance += distance_max_m
-            self.calcSpeed()
-
-            print(
-                f"Step {self.counter}: maximum distance {distance_max_m:.2f} m, "
-                f"total = {self.total_distance:.2f} m, speed = {self.speed:.2f} m/s"
-            )
-
-            self.max_distance_px = 0.0
             self.in_pas = False
-
-        elif distance_px > self.prev_distance_px:
+        #if the distance starts to increase, a new step will begin
+        elif distanceLegs_px > self.prev_distance_px:
             self.in_pas = True
 
-        self.prev_distance_px = distance_px
+        self.prev_distance_px = distanceLegs_px
         self.stage = "running"
+        self.calculateDistanceAndSpeed()
+
+        if(self.prevCounter != self.counter):
+            print(f"Step {self.counter}, Distance {self.distance}, Speed {self.speed}")
+            self.prevCounter = self.counter

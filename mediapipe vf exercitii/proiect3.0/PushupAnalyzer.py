@@ -6,7 +6,6 @@ class PushupAnalyzer(VideoAnalyzer):
     def __init__(self, video_path):
         super().__init__(video_path, window_name="Push-up Analysis")
         self.prevCounter = None
-        self.onlyFirstTime = True
 
     # function that extracts the coordinates of key points from the image and returns them
     def extractLandmarks(self, landmarks):
@@ -43,7 +42,7 @@ class PushupAnalyzer(VideoAnalyzer):
     def checkRep(self, landmarks_data):
         sholderR, sholderL, elbowR, elbowL, wristR, wristL, heelL, kneeL, hipL = landmarks_data
 
-        if(calculate_angle(heelL, kneeL, hipL) > 155 and calculate_angle(kneeL, hipL, sholderL) > 155):
+        if(calculate_angle(heelL, kneeL, hipL) > 145 and calculate_angle(kneeL, hipL, sholderL) > 145):
             elbow_angle = calculate_angle(sholderL, elbowL, wristL)
             if elbow_angle < 90:
                 self.stage = "down"

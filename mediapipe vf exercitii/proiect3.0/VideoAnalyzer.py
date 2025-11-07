@@ -10,9 +10,23 @@ class VideoAnalyzer(ABC):
         self.video_path = video_path
         self.window_name = window_name
         self.cap = cv2.VideoCapture(video_path)
-        self.counter = 0
+
+        self.prevCounter = None
+        self.flag = True
         self.stage = "initial"
+        self.h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
         self.angle = 0
+        self.counter = 0
+        self.speed = 0
+        self.distance = 0
+
+        self.athleteAge = None
+        self.athleteGender = None
+        self.athleteHeight = None
+        self.athleteWeight = None
+
 
         if not self.cap.isOpened():
             raise FileNotFoundError(f"Error: Could not open the video file: {video_path}")
@@ -34,7 +48,11 @@ class VideoAnalyzer(ABC):
         pass
 
 
-    def analyze(self):
+    def analyze(self, athlete):
+        self.athleteAge = athlete.age
+        self.athleteGender = athlete.gender
+        self.athleteHeight = athlete.height
+        self.athleteWeight = athlete.weight
         print(f"Type of analysis: {self.__class__.__name__}")
         with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
             while self.cap.isOpened():

@@ -25,9 +25,6 @@ def distance_points(p1, p2):
     x2, y2 = p2
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
-def transformTuple(landmark):
-    return (landmark.x, landmark.y)
-
 
 def drawLine(image, p1, p2):
     h, w, _ = image.shape
@@ -43,3 +40,7 @@ def drawLine(image, p1, p2):
     x2, y2 = int(x2 * w), int(y2 * h)
 
     cv2.line(image, (x1, y1), (x2, y2), (255, 192, 203), 3)
+
+
+
+
