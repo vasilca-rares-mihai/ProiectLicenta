@@ -2,6 +2,7 @@ import numpy as np
 import math
 import cv2
 
+#function that help me to calculate angle between 2 lines
 def calculate_angle(a, b, c):
     a = np.array(a)
     b = np.array(b)
@@ -19,13 +20,13 @@ def calculate_angle(a, b, c):
     angle = np.degrees(np.arccos(cos_angle))
     return angle
 
-
+#function that help me to calculate distance between 2 keypoints
 def distance_points(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
-
+# function that I use to draw a line between 2 variables
 def drawLine(image, p1, p2):
     h, w, _ = image.shape
 
@@ -41,6 +42,9 @@ def drawLine(image, p1, p2):
 
     cv2.line(image, (x1, y1), (x2, y2), (255, 192, 203), 3)
 
+#function that I use to calculate a distance in meters, based on the player's height in meters, pixels and that distance in pixels
+def pxToM(athleteHeight_m, aux, athleteHeight_px):
+    return (athleteHeight_m * aux) / athleteHeight_px
 
 
 

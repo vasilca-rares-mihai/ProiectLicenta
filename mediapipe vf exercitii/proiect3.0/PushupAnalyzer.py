@@ -5,7 +5,6 @@ from Utils import calculate_angle, drawLine
 class PushupAnalyzer(VideoAnalyzer):
     def __init__(self, video_path):
         super().__init__(video_path, window_name="Push-up Analysis")
-        self.prevCounter = None
 
     # function that extracts the coordinates of key points from the image and returns them
     def extractLandmarks(self, landmarks):

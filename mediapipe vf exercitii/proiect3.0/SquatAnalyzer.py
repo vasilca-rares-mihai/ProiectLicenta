@@ -6,7 +6,6 @@ class SquatAnalyzer(VideoAnalyzer):
 
     def __init__(self, video_path):
         super().__init__(video_path, window_name="Squat Analysis")
-        self.prevCounter = None
 
     #function that extracts the coordinates of key points from the image and returns them
     def extractLandmarks(self, landmarks):
@@ -45,5 +44,5 @@ class SquatAnalyzer(VideoAnalyzer):
 
         # print only when the counter has changed the value
         if self.prevCounter != self.counter:
-            print(f"Push-ups: {self.counter}")
+            print(f"Squats: {self.counter}")
             self.prevCounter = self.counter

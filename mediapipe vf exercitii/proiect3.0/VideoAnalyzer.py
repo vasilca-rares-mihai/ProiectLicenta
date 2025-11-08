@@ -11,12 +11,12 @@ class VideoAnalyzer(ABC):
         self.window_name = window_name
         self.cap = cv2.VideoCapture(video_path)
 
-        self.prevCounter = None
         self.flag = True
         self.stage = "initial"
         self.h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
+        self.prevCounter = None
         self.angle = 0
         self.counter = 0
         self.speed = 0
