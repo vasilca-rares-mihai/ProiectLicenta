@@ -12,7 +12,11 @@ class VerticalJumpAnalyzer(VideoAnalyzer):
         self.listOfJumps = [0]
         self.jumpHeight_px = 0
         self.athleteHeight_px = None
-        self.legsOnFirstFrame = None
+        self.legsOnFirstFrame = (0,0)
+
+    def calculateHeightJump(self):
+        self.jumpHeight_px = self.legsOnFirstFrame[1] - self.prevCoord
+        self.listOfJumps.append(pxToM(self.athleteHeight, self.jumpHeight_px, self.athleteHeight_px))
 
     def initializeVariablesForHeight(self, landmarks_data):
         if self.flag3:
@@ -45,6 +49,9 @@ class VerticalJumpAnalyzer(VideoAnalyzer):
         drawLine(image, (0,self.line), (300,self.line))
         cv2.putText(image, self.stage, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
 
+        drawLine(image, (heelL[0], self.legsOnFirstFrame[1]), heelL)
+        drawLine(image, (heelR[0], self.legsOnFirstFrame[1]), heelR)
+
 
 
     def checkRep(self, landmarks_data):
@@ -62,9 +69,7 @@ class VerticalJumpAnalyzer(VideoAnalyzer):
         if self.prevCoord < (heelR[1] + heelL[1]) / 2 and self.stage == "up" and self.flag2:
             self.flag2 = False
             self.counter += 1
-            self.jumpHeight_px = self.legsOnFirstFrame[1] - self.prevCoord
-            self.listOfJumps.append(pxToM(self.athleteHeight, self.jumpHeight_px, self.athleteHeight_px))
-
+            self.calculateHeightJump()
 
         self.prevCoord = (heelR[1] + heelL[1]) / 2
 
